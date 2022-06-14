@@ -4,15 +4,13 @@
 #include <optional>
 #include <string>
 
-using namespace platform::GLFW;
-
 static void error_callback(int err, const char *msg) {
     util::log::print(
         "GLFW ERROR (" + std::to_string(err) + "): " + msg,
         util::log::ERROR);
 }
 
-Window::Window(glm::vec2 size, const std::string &title) {
+platform::GLFW::Window::Window(glm::vec2 size, const std::string &title) {
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit()) {
@@ -68,7 +66,7 @@ Window::Window(glm::vec2 size, const std::string &title) {
     bgfx::renderFrame();
 }
 
-Window::~Window() {
+platform::GLFW::Window::~Window() {
     if (this->window == nullptr) {
         return;
     }
@@ -77,37 +75,37 @@ Window::~Window() {
     std::exit(0);
 }
 
-void Window::set_platform_data(
+void platform::GLFW::Window::set_platform_data(
         bgfx::PlatformData &platform_data
     ) {
     // TODO: change for other platforms
-    platform_data.nwh =
-        reinterpret_cast<void *>(glfwGetCocoaWindow(this->window));
+    platform_data.nwh = reinterpret_cast<void *>(glfwGetX11Window(this->window));
+    // platform_data.nwh = reinterpret_cast<void *>(glfwGetCocoaWindow(this->window));
 }
 
-void Window::prepare_frame() {
+void platform::GLFW::Window::prepare_frame() {
     glfwPollEvents();
 }
 
-void Window::end_frame() {
+void platform::GLFW::Window::end_frame() {
 
 }
 
-bool Window::is_close_requested() {
+bool platform::GLFW::Window::is_close_requested() {
     return glfwWindowShouldClose(this->window);
 }
 
-void Window::close() {
+void platform::GLFW::Window::close() {
     glfwSetWindowShouldClose(this->window, true);
 }
 
-glm::ivec2 Window::get_size() {
+glm::ivec2 platform::GLFW::Window::get_size() {
     glm::ivec2 res;
     glfwGetWindowSize(this->window, &res.x, &res.y);
     return res;
 };
 
-Keyboard::Keyboard(Window &window) {
+platform::GLFW::Keyboard::Keyboard(Window &window) {
     // TODO: check that another keyboard has not already been added
     window.keyboard = this;
     auto wrapper =
@@ -118,11 +116,11 @@ Keyboard::Keyboard(Window &window) {
     glfwSetKeyCallback(window.window, wrapper);
 }
 
-util::Iterator<platform::Button*> Keyboard::get_buttons() {
+util::Iterator<platform::Button*> platform::GLFW::Keyboard::get_buttons() {
     return util::iter_values(this->keys);
 }
 
-std::optional<platform::Button *> Keyboard::operator[](
+std::optional<platform::Button *> platform::GLFW::Keyboard::operator[](
     const std::string &name) {
     auto n = util::to_lower(name);
     return this->keys.contains(n) ?
@@ -130,7 +128,7 @@ std::optional<platform::Button *> Keyboard::operator[](
             std::nullopt;
 }
 
-void Keyboard::callback(
+void platform::GLFW::Keyboard::callback(
     UNUSED GLFWwindow *window,
     int key, int scancode, int action, UNUSED int mods) {
     if (action == GLFW_REPEAT) {
@@ -199,7 +197,7 @@ void Keyboard::callback(
     button->down = action != GLFW_RELEASE;
 }
 
-Mouse::Mouse(Window &window) : platform::Mouse() {
+platform::GLFW::Mouse::Mouse(Window &window) : platform::Mouse() {
     this->window = &window;
     window.mouse = this;
 
@@ -233,7 +231,7 @@ Mouse::Mouse(Window &window) : platform::Mouse() {
     glfwSetScrollCallback(window.window, wrapper_scroll);
 }
 
-void Mouse::set_mode(platform::Mouse::Mode mode) {
+void platform::GLFW::Mouse::set_mode(platform::GLFW::Mouse::Mode mode) {
     this->mode = mode;
 
     switch (mode) {
@@ -252,7 +250,7 @@ void Mouse::set_mode(platform::Mouse::Mode mode) {
     }
 }
 
-void Mouse::callback_pos(
+void platform::GLFW::Mouse::callback_pos(
     UNUSED GLFWwindow *window, double x, double y) {
     // NOTE: position is flipped! (0, 0) is bottom left
     this->pos = glm::vec2(x, this->window->get_size().y - y);
@@ -260,7 +258,7 @@ void Mouse::callback_pos(
         this->pos / glm::vec2(state.platform.window->get_size());
 }
 
-void Mouse::callback_button(
+void platform::GLFW::Mouse::callback_button(
     UNUSED GLFWwindow *window, int button, int action, UNUSED int mods) {
     std::optional<Button *> b;
 
@@ -277,13 +275,12 @@ void Mouse::callback_button(
     }
 }
 
-void Mouse::callback_enter(
+void platform::GLFW::Mouse::callback_enter(
     UNUSED GLFWwindow *window, int entered) {
     this->in_window = static_cast<bool>(entered);
 }
 
-void Mouse::callback_scroll(
+void platform::GLFW::Mouse::callback_scroll(
     UNUSED GLFWwindow *window, UNUSED double x, double y) {
     this->scroll += y;
 }
-

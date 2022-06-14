@@ -40,17 +40,25 @@ ifeq ($(UNAME_S), Darwin)
 endif
 
 ifeq ($(UNAME_S), Linux)
-	BGFX_TARGET=linux
+	BGFX_DEPS_TARGET = linux
+	BGFX_TARGET = linux
 endif
 
 SRC  = $(shell find src -name "*.cpp")
 OBJ  = $(SRC:.cpp=.o)
 BIN = bin
 
-BGFX_BIN = lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin
+BGFX_BIN = lib/bgfx/.build/$(BGFX_DEPS_TARGET)64_gcc/bin
 BGFX_CONFIG = Debug
 
 LDFLAGS += -lstdc++
+LDFLAGS += -ldl
+LDFLAGS += -lXrandr
+LDFLAGS += -lXext
+LDFLAGS += -lX11
+LDFLAGS += -pthreads
+LDFLAGS += -lGL
+LDFLAGS += -lGLU
 LDFLAGS += $(BGFX_BIN)/libbgfx$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbx$(BGFX_CONFIG).a
@@ -61,9 +69,9 @@ LDFLAGS += lib/glfw/src/libglfw3.a
 SHADERS_PATH		= res/shaders
 SHADERS				= $(shell find $(SHADERS_PATH)/* -maxdepth 1 | grep -E ".*/(vs|fs).*.sc")
 SHADERS_OUT			= $(SHADERS:.sc=.$(SHADER_TARGET).bin)
-SHADERC				= lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin/shaderc$(BGFX_CONFIG)
-SHADER_TARGET	= metal
-SHADER_PLATFORM = osx
+SHADERC				= lib/bgfx/.build/$(BGFX_DEPS_TARGET)64_gcc/bin/shaderc$(BGFX_CONFIG)
+SHADER_TARGET	= 440
+SHADER_PLATFORM = linux
 
 # allow for using SHADER_TARGET_xxx and SHADER_PLATFORM_xxx defines
 CCFLAGS += -DSHADER_TARGET_$(SHADER_TARGET) -DSHADER_PLATFORM_$(SHADER_PLATFORM)
@@ -86,12 +94,12 @@ dirs:
 
 # shader -> bin
 %.$(SHADER_TARGET).bin: %.sc
-	$(SHADERC)	--type $(shell echo $(notdir $@) | cut -c 1)						\
-						  -i lib/bgfx/src											\
-							--platform $(SHADER_PLATFORM)							\
-							-p $(SHADER_TARGET)										\
-							--varyingdef $(dir $@)varying.def.sc					\
-							-f $<													\
+	$(SHADERC)	--type $(shell echo $(notdir $@) | cut -c 1) \
+							-i lib/bgfx/src	\
+							--platform $(SHADER_PLATFORM)	\
+							-p $(SHADER_TARGET)	\
+							--varyingdef $(dir $@)varying.def.sc \
+							-f $< \
 							-o $@
 
 shaders: $(SHADERS_OUT)

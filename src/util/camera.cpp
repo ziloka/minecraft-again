@@ -67,7 +67,7 @@ void PerspectiveCamera::update(const glm::mat4 &view) {
              (glm::pi<f32>() / 2) - glm::epsilon<f32>());
     this->yaw =
         (this->yaw < 0 ? (glm::pi<f32>() * 2) : 0.0f) +
-            std::fmodf(this->yaw, glm::pi<f32>() * 2);
+            fmodf(this->yaw, glm::pi<f32>() * 2);
     this->direction =
         glm::normalize(
             glm::vec3(

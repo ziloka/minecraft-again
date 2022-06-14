@@ -53,7 +53,7 @@ static void render() {
 
     int y = 0;
     for (const auto &[s, t] : times) {
-        auto str =
+        auto &str =
             std::stringstream() << s
                 << std::fixed << std::setprecision(3)
                 << util::Time::to_millis(t) << " ms";

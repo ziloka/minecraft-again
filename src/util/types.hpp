@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cinttypes>
 #include <cstdlib>
+#include <array>
 #include <vector>
 
 typedef uint8_t u8;
